@@ -61,7 +61,7 @@ plot(basic.lm, which = 2)  # a bit off at the extremes, but that's often the cas
 
 
 ## However, what about observation independence? Are our data independent?
-## We collected multiple samples from eight mountain ranges
+## We collected multiple samples from 22 subjects 
 ## It's perfectly plausible that the data from within each mountain range are more similar to each other than the data from different mountain ranges - they are correlated. Pseudoreplication isn't our friend.
 
 ## Have a look at the data to see if above is true
