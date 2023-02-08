@@ -1,5 +1,6 @@
 ## load the data and have a look at it
 
+# https://ourcodingclub.github.io/tutorials/mixed-models/
 
 library (tidyverse)
 ss_data <- read_csv("stepping_stones_data.csv")
@@ -89,12 +90,10 @@ Subjects.lm <- lm(Met_Int ~ COV2 + Subject, data = ss_data)
 summary(Subjects.lm)
 
 #### COV2 IS ACTUALLY VERY SIGNIFICANT
-#### But some others are not signficant
-
-# Now COV2 is not significant. But let’s think about what we are doing here for a second. 
+#### But some others are not significant. But let’s think about what we are doing here for a second. 
 # The above model is estimating the difference in Met_int between the subjects - 
 # we can see all of them in the model output returned by summary(). But we are not 
-# interested in quantifying Met_Int for each specific mountain range: we just want
+# interested in quantifying Met_Int for each specific subject: we just want
 # to know whether COV2 affects Met_Int and we want to simply control for the 
 # variation coming from the subjects. # This is what we refer to as 
 # “random factors” and so we arrive at mixed effects models. Ta-daa!
@@ -113,7 +112,7 @@ library(lme4)
 
 ## Fixed and random effects
 
-# Fixed are variables that we expect to have an imact on the dependent variable
+# Fixed are variables that we expect to have an impact on the dependent variable
 # (metabolic cost). They are explanatory (in SLR). Want to make
 # conclusions about COV2 and Metabolic cost. COV is fixed and Met_Int is dependent
 
@@ -133,11 +132,11 @@ library(lme4)
 # be correlated, so we want to account for that. 
 
 # IF WE CHOSE THESE SUBJECTS PRIORI, and were interested in these
-# SPECIFIC PEOPLE and wanted to make predictions ABOUT THEM, it would be
-# a FITTED effect.
+# SPECIFIC PEOPLE and wanted to make predictions ABOUT THEM, it would be FITTED AS A
+# FIXED effect.
 
 # should this be fixed or random? Data is for 4 DP for each participant...
-# fits each subject with their own intercept...clea
+# fits each subject with their own intercept...clear
 
 mixed.lmer2 <- lmer(Met_Int ~ COV2 + (1|Subject), data = ss_data)
 summary(mixed.lmer2)
@@ -188,10 +187,11 @@ summary(mixed.ranslope)
     facet_wrap(~Subject, nrow=3) +   # a panel for each mountain range
     geom_point(alpha = 0.5) +
     theme_classic() +
-    geom_line(data = cbind(ss_data, pred = predict(mixed.ranslope)), aes(y = pred), size = 1) +  # adding predicted line from mixed model 
+    geom_line(data = cbind(ss_data, pred = predict(mixed.ranslope)), aes(y = pred), size = 1) +  # adding predicted line from mixed model #and applies geometric but applies it individually
     theme(legend.position = "none",
           panel.spacing = unit(2, "lines"))  # adding space between panels
 )
+
 
 
 # continuing...
@@ -207,7 +207,7 @@ library(ggeffects)  # install the package first if you haven't already, then loa
 
 #extract predictions from dataframe
 pred.mm <- ggpredict(mixed.lmer2, terms = c("COV2"))  # this gives overall predictions for the model
-
+# c() returns as a vector list
 
 (ggplot(pred.mm) + 
     geom_line(aes(x = x, y = predicted)) +          # slope
@@ -216,17 +216,37 @@ pred.mm <- ggpredict(mixed.lmer2, terms = c("COV2"))  # this gives overall predi
     geom_point(data = ss_data,                      # adding the raw data (scaled values)
                aes(x = COV2, y = Met_Int, colour = Subject)) + 
     labs(x = "COV2 (indexed)", y = "Met_Int", 
-         title = "Body length does not affect Met_Int in dragons") + 
+         title = "COV does affect Met_Int in Subjects") + 
     theme_minimal()
 )
 
-# not enough color scales for subjects
-install.packages("see")
-library (see)
+#this is basically the slope generated along the path
 
-data(efc)
-efc$c172code <- as_label(efc$c172code)
-plot(dat)
+#plot each of the predicted slopes 
+#want to array it down the line
 
-pred.mm <- ggpredict(mixed.lmer2, terms = c("COV2", "Subject"), type = "re") %>% 
-plot(x= pred.mm$x, y=pred.mm$predicted, type= 'l', xlim=NULL, ylim=NULL)
+ggplot(ss_data, aes(x = COV, y = Met_Int, colour = Subject)) +
+  facet_wrap(~Subject, nrow=3) +   # a panel for each subject
+  geom_point(alpha = 0.5) +
+  theme_classic() +
+  geom_line(data = cbind(ss_data, pred = predict(mixed.ranslope)), aes(y = pred), size = 1) +  # adding predicted line from mixed model #and applies geometric but applies it individually
+  theme(legend.position = "none",
+        panel.spacing = unit(2, "lines"))  # adding space between panels
+
+#cbind combines two rows of data together
+#basically we add predicted to the end of ss_data, temporarily that gets fed in. 
+
+temp <- cbind(ss_data, pred = predict(mixed.ranslope))
+pred = predict(mixed.ranslope) ## is our 18 participants and the four data points for predicted... 
+view(pred)
+
+ggplot(ss_data, aes(x = COV, y = Met_Int, colour = Subject)) + 
+  geom_line(data = cbind(ss_data, pred = predict(mixed.ranslope)), size = 1)  # adding predicted line from mixed model #and applies geometric but applies it individually
+
+ggplot(ss_data, aes(x = COV, y = Met_Int, colour = Subject)) + 
+  geom_line(data = cbind(ss_data, pred = predict(mixed.ranslope)), aes(y = pred), size = 1)  # adding predicted line from mixed model #and applies geometric but applies it individually
+#this is what the predicted slopes would look like, mapped for the mixed.ranslope LMER. 
+  
+
+
+
