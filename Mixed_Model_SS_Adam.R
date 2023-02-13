@@ -1,8 +1,12 @@
 ## load the data and have a look at it
 
+setwd("~/GitHub/CC-Linear-mixed-models")
 # https://ourcodingclub.github.io/tutorials/mixed-models/
-
-library (tidyverse)
+library(tidyverse)
+library(lme4)
+library(emmeans)
+library(MuMIn)
+library(patchwork)
 ss_data <- read_csv("stepping_stones_data.csv")
 
 
@@ -107,8 +111,9 @@ summary(Subjects.lm)
 # avoid problems with multiple comparisons that we would encounter while using 
 # separate regressions. We are going to work in lme4, so load the package 
 # (or use install.packages if you don’t have lme4 on your computer
-
+# install.packages("sjstats")
 library(lme4)
+library(sjstats)
 
 ## Fixed and random effects
 
@@ -138,9 +143,14 @@ library(lme4)
 # should this be fixed or random? Data is for 4 DP for each participant...
 # fits each subject with their own intercept...clear
 
-mixed.lmer2 <- lmer(Met_Int ~ COV2 + (1|Subject), data = ss_data)
-summary(mixed.lmer2)
+mixed.lmer2 <- lmer(Met_Int ~ COV2 + (1 + COV2|Subject), data = ss_data)
+a <- summary(mixed.lmer2) # from DAN
+r_sq <- r.squaredGLMM(mixed.lmer2)
+#r_sq value tells me that the correlation for estimated metabolic power for each condition of variability is 
+# 0.68 for no pooling  
 
+
+## will output ICC, adjusted ICC and unadjusted ICC
 ## MATCHES WHAT DAN WROTE ABOUT IN HIS EMAIL
 
 # take variance for =Subjects and divide by total variance
